@@ -110,7 +110,9 @@ async def get_record(request: Request, ave_id: str) -> dict:
     for record in _cache["records"]:
         if record.get("ave_id") == ave_id:
             return record
-    raise HTTPException(status_code=404, detail=MSG_RECORD_NOT_FOUND.format(ave_id=ave_id))
+    raise HTTPException(
+        status_code=404, detail=MSG_RECORD_NOT_FOUND.format(ave_id=ave_id)
+    )
 
 
 @app.get("/records/{ave_id}/mitigation")
@@ -126,7 +128,9 @@ async def get_mitigation(request: Request, ave_id: str) -> dict:
                     detail=MSG_MITIGATION_NOT_FOUND.format(ave_id=ave_id),
                 )
             return mitigation
-    raise HTTPException(status_code=404, detail=MSG_RECORD_NOT_FOUND.format(ave_id=ave_id))
+    raise HTTPException(
+        status_code=404, detail=MSG_RECORD_NOT_FOUND.format(ave_id=ave_id)
+    )
 
 
 @app.get("/search")
