@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: no-em-dash
+        name: no em dashes anywhere
+        entry: bash -c '! grep -rn "\xe2\x80\x94" --include="*.py" --include="*.md" --include="*.yaml" --include="*.yml" .'
+        language: system
+        pass_filenames: false
+
+      - id: no-vendor-coupling
+        name: no stray unexplained vendor references
+        entry: bash -c '! grep -rniE "piranha" --include="*.py" --include="*.md" .'
+        language: system
+        pass_filenames: false
