@@ -45,9 +45,9 @@ minutes thereafter. This repo holds no copy of the record data itself;
 
 ## Deployment
 
-Deployed on Render. See `ARCHITECTURE.md`'s ADR section for why Render was
-chosen over Cloud Run and Vercel, and what would have to change to revisit
-that.
+Deployed on Google Cloud Run (`--min-instances 0`, scales to zero at
+idle). See `ARCHITECTURE.md`'s ADR section for the full reasoning,
+including why Render was the original choice and what changed.
 
 ## Contributing
 

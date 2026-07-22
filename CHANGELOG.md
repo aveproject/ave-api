@@ -3,6 +3,31 @@
 All notable changes to this project are documented here. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Changed
+
+- Hosting switched from the planned Render deployment to Google Cloud
+  Run for the first production deployment (`--min-instances 0`,
+  `--max-instances 3`, `us-central1`), accepting the card-on-file
+  tradeoff in exchange for a persistent-container model that matches
+  this service's in-memory cache design. A $1 budget alert is the
+  concrete mitigation. See `ARCHITECTURE.md`'s ADR section for the full
+  reasoning.
+
+### Fixed
+
+- `Dockerfile` only copied `main.py`, never `constants.py`, so the
+  built image crashed on startup with `ModuleNotFoundError` before
+  `uvicorn` ever bound to the port. Caught by the first real deploy
+  attempt; `python3 -m py_compile main.py` never catches this since it
+  runs against the full checked-out repo, not the trimmed set of files
+  the Dockerfile actually copies into the image.
+- The fix for the above (`COPY main.py constants.py .`) built fine
+  locally under BuildKit but failed on Cloud Build's classic builder,
+  which enforces the Dockerfile spec strictly: a multi-source `COPY`'s
+  destination must end with `/`.
+
 ## [1.0.0] - initial release
 
 ### Added
