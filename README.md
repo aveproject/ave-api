@@ -5,6 +5,18 @@ Read-only reference implementation of the [AVE](https://aveproject.org)
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/aveproject/ave-api/badge)](https://securityscorecards.dev/viewer/?uri=github.com/aveproject/ave-api)
 [![CodeQL](https://github.com/aveproject/ave-api/actions/workflows/codeql.yml/badge.svg)](https://github.com/aveproject/ave-api/actions/workflows/codeql.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![Deployed on Cloud Run](https://img.shields.io/badge/deployed-Cloud%20Run-4285F4?logo=googlecloud&logoColor=white)](ARCHITECTURE.md)
+
+- **Live API:** https://api.aveproject.org
+- **Interactive docs:** https://api.aveproject.org/docs
+
+## Quick start
+
+```bash
+curl -s https://api.aveproject.org/records/AVE-2026-00046 | jq .
+```
 
 ## What this is, and isn't
 
