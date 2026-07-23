@@ -52,11 +52,22 @@ when and why this was added.
 ## ADR: hosting platform
 
 Considered Vercel (rejected: serverless-only Python, no persistent
-in-memory state, incompatible with this service's cache design). Chose
-Render as primary (zero card on file, real cost is a slower cold start
-after idle) over Cloud Run (technically better fit for the persistent-
-container model, but requires a card on file even though usage should
-stay within the free tier). See `README.md` deployment section for the
-current live choice; check there before assuming this ADR reflects where
-it's actually running today, ADRs record reasoning at decision time, they
-don't self-update.
+in-memory state, incompatible with this service's cache design).
+Originally chose Render as primary (zero card on file, real cost was a
+slower cold start after idle) over Cloud Run (technically better fit
+for the persistent-container model, but requires a card on file even
+though usage should stay within the free tier).
+
+Revisited for the first production deployment and switched to Cloud
+Run: the card-on-file requirement was accepted deliberately, with a $1
+budget alert as the concrete mitigation (a service expected to cost $0
+means any alert firing at all is the signal, not a soft limit), in
+exchange for the persistent-container model actually matching this
+service's in-memory cache design instead of working around Render's
+sleep-and-wake cycle. `--min-instances 0` keeps it free at idle the
+same way Render's sleep did, just without the cold-start latency on
+wake.
+
+See `README.md`'s deployment section for the current live choice; check
+there before assuming this ADR reflects where it's actually running
+today, ADRs record reasoning at decision time, they don't self-update.
