@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from constants import (
+    MSG_INDEX_REFRESH_FAILED,
     MSG_INITIAL_FETCH_FAILED,
     MSG_MITIGATION_NOT_FOUND,
     MSG_RECORD_NOT_FOUND,
@@ -85,13 +86,30 @@ async def startup() -> None:
 
 
 @app.get("/")
-async def index() -> dict:
+@limiter.limit("60/minute")
+async def index(request: Request) -> dict:
+    try:
+        await _ensure_fresh()
+    except Exception as e:
+        # The index stays reachable so a person or an uptime check can see
+        # that data is missing. /records still fails loudly when the cache
+        # has never been populated.
+        logger.warning(MSG_INDEX_REFRESH_FAILED.format(error=e))
+    fetched_at = _cache["fetched_at"]
+    age = round(time.time() - fetched_at) if fetched_at else None
+    if not _cache["records"]:
+        status = "no data yet"
+    elif age > REFRESH_INTERVAL_SECONDS:
+        status = "stale"
+    else:
+        status = "ok"
     return {
         "name": SERVICE_NAME,
         "standard": STANDARD_URL,
         "repo": REPO_URL,
+        "status": status,
         "record_count": len(_cache["records"]),
-        "cache_age_seconds": round(time.time() - _cache["fetched_at"]),
+        "cache_age_seconds": age,
         "docs": "/docs",
     }
 
