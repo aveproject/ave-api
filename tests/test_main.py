@@ -132,3 +132,75 @@ def test_refresh_failure_is_a_real_failure_when_cache_was_never_populated(
         response = test_client.get("/records")
 
     assert response.status_code == 500
+
+
+def _flaky_refresh(monkeypatch, fail_first):
+    """Replace the cache refresh with one that fails `fail_first` times and then
+    succeeds, and return the call counter."""
+    calls = {"n": 0}
+
+    async def refresh() -> None:
+        calls["n"] += 1
+        if calls["n"] <= fail_first:
+            raise RuntimeError("simulated network failure")
+        main._cache["records"] = FAKE_RECORDS
+        main._cache["fetched_at"] = time.time()
+
+    monkeypatch.setattr(main, "_refresh_cache", refresh)
+    return calls
+
+
+def test_index_retries_a_cache_whose_startup_fetch_failed(monkeypatch):
+    calls = _flaky_refresh(monkeypatch, fail_first=1)
+
+    with TestClient(main.app) as test_client:
+        body = test_client.get("/").json()
+
+    assert calls["n"] == 2
+    assert body["record_count"] == len(FAKE_RECORDS)
+    assert body["status"] == "ok"
+    assert body["cache_age_seconds"] < 5
+
+
+def test_index_refreshes_a_stale_cache(client, monkeypatch):
+    calls = _flaky_refresh(monkeypatch, fail_first=0)
+    main._cache["fetched_at"] = time.time() - main.REFRESH_INTERVAL_SECONDS - 1
+
+    body = client.get("/").json()
+
+    assert calls["n"] == 1
+    assert body["status"] == "ok"
+    assert body["cache_age_seconds"] < 5
+
+
+def test_index_reports_no_data_not_a_nonsense_age_while_fetching_keeps_failing(
+    monkeypatch,
+):
+    _flaky_refresh(monkeypatch, fail_first=10**6)
+
+    with TestClient(main.app) as test_client:
+        response = test_client.get("/")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["record_count"] == 0
+    assert body["status"] == "no data yet"
+    assert body["cache_age_seconds"] is None
+
+
+def test_index_says_stale_when_refresh_fails_and_the_cache_is_old(client, monkeypatch):
+    _flaky_refresh(monkeypatch, fail_first=10**6)
+    main._cache["fetched_at"] = time.time() - main.REFRESH_INTERVAL_SECONDS - 60
+
+    body = client.get("/").json()
+
+    assert body["status"] == "stale"
+    assert body["record_count"] == len(FAKE_RECORDS)
+    assert body["cache_age_seconds"] > main.REFRESH_INTERVAL_SECONDS
+
+
+def test_the_index_is_rate_limited_too(client):
+    for _ in range(60):
+        assert client.get("/").status_code == 200
+
+    assert client.get("/").status_code == 429

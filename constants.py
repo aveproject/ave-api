@@ -11,3 +11,6 @@ MSG_INITIAL_FETCH_FAILED = (
 MSG_REFRESH_FAILED = (
     "Cache refresh failed, continuing to serve the last known-good cache: {error}"
 )
+MSG_INDEX_REFRESH_FAILED = (
+    "Index could not refresh the cache, reporting the last known state: {error}"
+)
