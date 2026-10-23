@@ -1,0 +1,50 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  annotations:
+    run.googleapis.com/build-enable-automatic-updates: 'false'
+    run.googleapis.com/build-id: e9b60b42-1ffb-4d15-9d87-f8f840c14d30
+    run.googleapis.com/build-image-uri: us-central1-docker.pkg.dev/project-e41cd060-d62a-477e-92b/cloud-run-source-deploy/ave-api
+    run.googleapis.com/build-name: projects/303150375503/locations/us-central1/builds/e9b60b42-1ffb-4d15-9d87-f8f840c14d30
+    run.googleapis.com/build-source-location: gs://run-sources-project-e41cd060-d62a-477e-92b-us-central1/services/ave-api/1784734143.308506-983e673023cd447395a3ca22eab70e8b.zip#1784734143964136
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+    run.googleapis.com/maxScale: '1'
+    run.googleapis.com/urls: '["https://ave-api-303150375503.us-central1.run.app","https://ave-api-2q5w6u36fa-uc.a.run.app"]'
+  labels:
+    cloud.googleapis.com/location: us-central1
+  name: ave-api
+  namespace: '303150375503'
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '3'
+        run.googleapis.com/client-name: gcloud
+        run.googleapis.com/client-version: 576.0.0
+        run.googleapis.com/startup-cpu-boost: 'true'
+      labels:
+        client.knative.dev/nonce: edcjtcmojy
+        run.googleapis.com/startupProbeType: Default
+    spec:
+      containerConcurrency: 80
+      containers:
+      - image: us-central1-docker.pkg.dev/project-e41cd060-d62a-477e-92b/cloud-run-source-deploy/ave-api@sha256:a91c837ea9dccee8c3c24cb29be3653a227c54186d9b2fea1417ba41b09290b6
+        ports:
+        - containerPort: 8080
+          name: http1
+        resources:
+          limits:
+            cpu: '1'
+            memory: 256Mi
+        startupProbe:
+          failureThreshold: 1
+          periodSeconds: 240
+          tcpSocket:
+            port: 8080
+          timeoutSeconds: 240
+      serviceAccountName: 303150375503-compute@developer.gserviceaccount.com
+      timeoutSeconds: 300
+  traffic:
+  - latestRevision: true
+    percent: 100
