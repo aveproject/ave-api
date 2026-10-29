@@ -21,8 +21,9 @@ mid-session.
 
 ## Resilience rules
 
-- Every network call this service makes (currently: one, the fetch to
-  `aveproject/ave`) must handle failure without taking down unrelated
+- Every network call this service makes (currently: the latest records
+  and manifest from `aveproject/ave`, a pinned release's assets, and the
+  GitHub Releases API) must handle failure without taking down unrelated
   requests. A dependency being briefly unreachable is a routine event, not
   an incident; the cache-serves-stale-on-refresh-failure pattern in
   `_ensure_fresh()` is the model to follow for any future external call
@@ -34,8 +35,8 @@ mid-session.
   decorator every existing route has. A route added without it is a gap in
   the rate-limiting coverage, not an oversight to catch later.
 - Timeouts on every outbound call, no exceptions. The existing fetch uses
-  `timeout=10`; any new outbound call needs an explicit timeout of its
-  own, never the client library's default.
+  `timeout=10` through `_client()`; any new outbound call needs an explicit
+  timeout of its own, never the client library's default.
 
 ## Security rules
 

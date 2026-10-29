@@ -7,8 +7,9 @@ any prior history with this project.
 ## What this is
 
 A read-only reference API for AVE (Agentic Vulnerability Enumeration).
-Four endpoints: list records, get one record, get one record's neutral
-mitigation object, search. No auth, no write path, ever.
+A handful of endpoints under `/v1`: list records, get one record, get one
+record's neutral mitigation object, search, and list the catalog releases
+that can be pinned. No auth, no write path, ever.
 
 ## What this is not
 
@@ -28,8 +29,8 @@ addition here. Keep this boring on purpose.
 ## Data flow, one direction
 
 `aveproject/ave` publishes `dist/ave-records-latest.json`. This service
-fetches it, caches it in memory, and serves it back out through four thin
-endpoints. Nothing here originates data, transforms it meaningfully, or
+fetches it (or a pinned release of it), caches it in memory, and serves it
+back out through a few thin endpoints. Nothing here originates data, transforms it meaningfully, or
 stores a durable copy anywhere. If a task description involves writing new
 record content, generating new fields, or anything that isn't "fetch,
 cache, serve," stop and check whether the task actually belongs in

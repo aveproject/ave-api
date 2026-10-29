@@ -5,7 +5,31 @@ follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+
+- Version 1 of the contract under `/v1/`: `/v1/`, `/v1/records`,
+  `/v1/records/{ave_id}`, `/v1/records/{ave_id}/mitigation`, `/v1/search`.
+  The unversioned paths stay as aliases with identical behaviour (#49).
+- Every data response names the catalog it came from: `AVE-API-Version`,
+  `AVE-Catalog` (`latest` or a release tag), `AVE-Records-SHA256`,
+  `AVE-Schema-Version`, `AVE-Source-Commit` when known, plus `ETag`,
+  `Last-Modified` and `Cache-Control`. A matching `If-None-Match` returns
+  `304`. The root adds `api_version`, `schema_version` and a `catalog`
+  object read from the latest manifest.
+- `?release=vX.Y.Z` on every data route serves that catalog release of
+  `aveproject/ave`, verified against its `SHA256SUMS` and manifest before
+  use and cached in memory (a few releases). An unknown release is a `404`;
+  one that fails verification is a `502` and is not cached.
+- `GET /v1/releases`: the catalog releases, from the GitHub Releases API,
+  cached for an hour and revalidated with conditional requests.
+
 ### Changed
+
+- A refresh of the latest data now also fetches its manifest, and a records
+  file that does not match the manifest's `sha256` or `record_count` counts
+  as a failed refresh (the last known-good cache keeps serving).
+- CORS exposes the `AVE-*` headers and `ETag`, so browser scripts can read
+  them.
 
 - Hosting switched from the planned Render deployment to Google Cloud
   Run for the first production deployment (`--min-instances 0`,
