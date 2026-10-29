@@ -1,3 +1,5 @@
+import hashlib
+import json
 import time
 
 import pytest
@@ -24,7 +26,26 @@ FAKE_RECORDS = [
         "behavioral_fingerprint": "unconfirmed destructive action",
         "mitigation": None,
     },
+    {
+        "ave_id": "AVE-0003",
+        "status": "deprecated",
+        "title": "Superseded class",
+        "description": "Merged into another record after review.",
+        "attack_class": "superseded",
+        "behavioral_fingerprint": "retired",
+        "mitigation": None,
+    },
 ]
+
+FAKE_CATALOG = {
+    "channel": "latest",
+    "schema_version": "1.2.0",
+    "record_count": len(FAKE_RECORDS),
+    "sha256": hashlib.sha256(json.dumps(FAKE_RECORDS).encode()).hexdigest(),
+    "generated_at": "2026-10-28T23:50:03.886Z",
+    "source_commit": None,
+    "release": None,
+}
 
 
 @pytest.fixture(autouse=True)
@@ -34,11 +55,16 @@ def isolated_service_state(monkeypatch):
 
     async def fake_refresh_cache() -> None:
         main._cache["records"] = FAKE_RECORDS
+        main._cache["catalog"] = FAKE_CATALOG
         main._cache["fetched_at"] = time.time()
 
     monkeypatch.setattr(main, "_refresh_cache", fake_refresh_cache)
     main._cache["records"] = []
+    main._cache["catalog"] = None
     main._cache["fetched_at"] = 0.0
+    main._release_cache.clear()
+    main._releases.update(items=None, etag=None, fetched_at=0.0)
+    main._release_manifests.clear()
     main.limiter.reset()
     yield
 
