@@ -3,7 +3,7 @@ import time
 from fastapi.testclient import TestClient
 
 import main
-from conftest import FAKE_RECORDS
+from conftest import FAKE_CATALOG, FAKE_RECORDS
 
 
 def test_index_reports_service_metadata(client):
@@ -144,6 +144,7 @@ def _flaky_refresh(monkeypatch, fail_first):
         if calls["n"] <= fail_first:
             raise RuntimeError("simulated network failure")
         main._cache["records"] = FAKE_RECORDS
+        main._cache["catalog"] = FAKE_CATALOG
         main._cache["fetched_at"] = time.time()
 
     monkeypatch.setattr(main, "_refresh_cache", refresh)
